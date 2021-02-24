@@ -2,17 +2,36 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
-use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Asset;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Security\Core\User\UserInterface;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ * normalizationContext={"groups"={"user:read"}},
+ *    collectionOperations={
+ *        "get"={"access_control"="is_granted('ROLE_AdminSystem')"},
+ *        "get_caissier"={
+ *          "method"="GET",
+ *          "path"= "/users/caissier",
+ *          "security"="is_granted('ROLE_AdminSystem')"
+ *      },  
+ *},
+ *    itemOperations={
+ *        "get"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_AdminAgence') or object==user"},
+ *         "delete"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_AdminAgence')"}
+ *})
+ * @ApiFilter(SearchFilter::class, properties={"profil.libelle": "exact"})
  * @UniqueEntity("username", message="l'adress username doit être unique")
  */
 class User implements UserInterface
@@ -21,12 +40,14 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"user:read","compte:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $username;
 
@@ -39,18 +60,21 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $prenom;
 
@@ -62,24 +86,28 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $cni;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $address;
 
     /**
      * @ORM\Column(type="boolean")
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $statut = false;
 
@@ -87,8 +115,24 @@ class User implements UserInterface
      * @ORM\ManyToOne(targetEntity=Profil::class, inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"user:read","compte:write","compte:read"})
      */
     private $profil;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="users")
+     */
+    private $agence;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="userDepot")
+     */
+    private $transactions;
+
+    public function __construct()
+    {
+        $this->transactions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -258,6 +302,48 @@ class User implements UserInterface
     public function setProfil(?Profil $profil): self
     {
         $this->profil = $profil;
+
+        return $this;
+    }
+
+    public function getAgence(): ?Agence
+    {
+        return $this->agence;
+    }
+
+    public function setAgence(?Agence $agence): self
+    {
+        $this->agence = $agence;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransactions(): Collection
+    {
+        return $this->transactions;
+    }
+
+    public function addTransaction(Transaction $transaction): self
+    {
+        if (!$this->transactions->contains($transaction)) {
+            $this->transactions[] = $transaction;
+            $transaction->setUserDepot($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): self
+    {
+        if ($this->transactions->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getUserDepot() === $this) {
+                $transaction->setUserDepot(null);
+            }
+        }
 
         return $this;
     }

@@ -14,7 +14,7 @@ class UsersController extends AbstractController
 {
     /**
      * @Route(
-     *     "api/user",
+     *     "api/users",
      *     name="adding",
      *     methods={"POST"}
      *     )

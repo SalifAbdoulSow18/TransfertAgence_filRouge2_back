@@ -27,5 +27,12 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    'App\DataProvider\UserProvider':
+      tags: [{ name: "api_platform.collection_data_provider", priority: 2 }]
+        # Autoconfiguration must be disabled to set a custom priority
+      autoconfigure: false
+      arguments:
+        $itemExtensions: !tagged api_platform.doctrine.orm.query_extension.item
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
