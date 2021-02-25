@@ -34,14 +34,14 @@ class Agence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"compte:read"})
+     * @Groups({"compte:read","transaction:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"compte:write","compte:read"})
+     * @Groups({"compte:write","compte:read","transaction:read"})
      */
     private $nomAgence;
 
@@ -65,6 +65,7 @@ class Agence
 
     /**
      * @ORM\OneToOne(targetEntity=Compte::class, inversedBy="agence", cascade={"persist", "remove"})
+     * @Groups({"transaction:read"})
      */
     private $compte;
 

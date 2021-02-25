@@ -33,14 +33,14 @@ class Compte
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"compte:read"})
+     * @Groups({"compte:read","transaction:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"compte:write","compte:read"})
+     * @Groups({"compte:write","compte:read","transaction:read"})
      */
     private $numeroCompte;
 
@@ -49,7 +49,7 @@ class Compte
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"compte:write","compte:read"})
      */
-    private $montant;
+    private $montant = 700000.00;
 
     /**
      * @ORM\Column(type="boolean")

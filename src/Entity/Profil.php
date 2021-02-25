@@ -22,14 +22,14 @@ class Profil
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"user:read","compte:read"})
+     * @Groups({"user:read","compte:read","transaction:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
      */
     private $libelle;
 
