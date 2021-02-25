@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Depot;
+use App\Repository\CompteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\TransactionRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -102,6 +104,38 @@ class TransactionController extends AbstractController
         }
         return $chaineAleatoire;
     }
+
+
+    // ----------------------------------------Pour le rechargement d'un compte d'une Agence
+     /**
+     *  @Route(
+     *  "api/rechargeComptes/{id}",
+     *   name="rechargeCompte",
+     *   methods={"PUT"}
+     * )
+     */
+    public function rechargeCompte(Request $request, EntityManagerInterface $manager, CompteRepository $repo,int $id)
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!$this->getUser() || (!in_array('ROLE_AdminSystem', $this->getUser()->getRoles()) && !in_array('ROLE_Caissier', $this->getUser()->getRoles()))) {
+         return $this->json(['message' => 'Accès non autorisé'], 403);
+        }
+        $compte = $repo->find($id);
+        if (!$compte) {
+            return $this->json(['message' => 'Le compte n\'existe pas'], 401);
+        }
+        $newMontantCompte = $compte->getMontant() + $data['montantDepot'];
+        $compte->setMontant($newMontantCompte);
+        $depot = new Depot();
+        $depot->setMontantDepot($data['montantDepot']);
+        $depot->setUserDepot($this->getUser());
+        $depot->setDateDepot(new \DateTime());
+        $compte->addDepot($depot);
+        $manager->flush();
+        return $this->json(['message' => 'Succes', 'data'=>$compte]);
+
+        
+    } 
 
    
     

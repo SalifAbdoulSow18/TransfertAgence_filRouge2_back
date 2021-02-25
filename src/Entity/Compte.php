@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CompteRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -65,6 +67,16 @@ class Compte
      */
     private $agence;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Depot::class, mappedBy="compte", cascade={"persist", "remove"})
+     */
+    private $depots;
+
+    public function __construct()
+    {
+        $this->depots = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -124,6 +136,36 @@ class Compte
         }
 
         $this->agence = $agence;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Depot[]
+     */
+    public function getDepots(): Collection
+    {
+        return $this->depots;
+    }
+
+    public function addDepot(Depot $depot): self
+    {
+        if (!$this->depots->contains($depot)) {
+            $this->depots[] = $depot;
+            $depot->setCompte($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDepot(Depot $depot): self
+    {
+        if ($this->depots->removeElement($depot)) {
+            // set the owning side to null (unless already changed)
+            if ($depot->getCompte() === $this) {
+                $depot->setCompte(null);
+            }
+        }
 
         return $this;
     }
