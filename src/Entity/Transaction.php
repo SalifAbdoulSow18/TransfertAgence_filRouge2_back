@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TransactionRepository;
+use App\Repository\TableauFraisRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -271,70 +272,18 @@ class Transaction
         return $this;
     }
  // pour la recuperation des tarifs.
-    public function calculeFraisTotal(){
+ public function calculeFraisTotal(TableauFraisRepository $tableauFrais){
+    $data = $tableauFrais->findAll();
+    foreach ($data as $value) {
         switch (true) {
-            case ($this->montant<=5000):
-                $this->fraisTotal = 425;
+            case ($this->montant >= 2000000):
+                $this->fraisTotal = ($value->getTarif() * $this->montant);
                 break;
-            case ($this->montant<=10000 && $this->montant > 5000):
-                $this->fraisTotal = 850;
+            case ($this->montant >= $value->getMin() && $this->montant < $value->getMax()):
+                $this->fraisTotal = $value->getTarif();
                 break;
-            case ($this->montant<=15000 && $this->montant > 10000):
-                $this->fraisTotal = 1270;
-                break;
-            case ($this->montant<=20000 && $this->montant > 15000):
-                $this->fraisTotal = 1695;
-                break;
-            case ($this->montant<=50000 && $this->montant > 20000):
-                $this->fraisTotal = 2500;
-                break;    
-            case ($this->montant<=60000 && $this->montant > 50000):
-                $this->fraisTotal = 3000;
-                break;
-            case ($this->montant<=75000 && $this->montant > 60000):
-                $this->fraisTotal = 4000;
-                    break;
-            case ($this->montant<=120000 && $this->montant > 75000):
-                $this->fraisTotal = 5000;    
-                break;
-            case ($this->montant<=150000 && $this->montant > 120000):
-                $this->fraisTotal = 6000;
-                break;
-            case ($this->montant<=200000 && $this->montant > 150000):
-                $this->fraisTotal = 7000;
-                break;                 
-            case ($this->montant<=250000 && $this->montant > 200000):
-                $this->fraisTotal = 8000;
-                break;
-            case ($this->montant<=300000 && $this->montant > 250000):
-                $this->fraisTotal = 90000;
-                break;
-            case ($this->montant<=400000 && $this->montant > 300000):
-                $this->fraisTotal = 12000;
-                break;
-            case ($this->montant<=750000 && $this->montant > 400000):
-                $this->fraisTotal = 15000;
-                break;        
-        
-            case ($this->montant<=900000 && $this->montant > 750000):
-                $this->fraisTotal = 22000;
-                break; 
-                        
-            case ($this->montant<=1000000 && $this->montant > 900000):
-                $this->fraisTotal = 25000;
-                break;
-            case ($this->montant<=1125000 && $this->montant > 1000000):
-                $this->fraisTotal = 27000;
-                break;
-            case ($this->montant<=14000000 && $this->montant > 1125000):
-                $this->fraisTotal = 30000;
-                break;
-            case ($this->montant<=20000000 && $this->montant > 14000000):
-                $this->fraisTotal = 30000;
-                break;
-            case ($this->montant > 20000000):
-                $this->fraisTotal = (2 * $this->montant) / 100;
-                break;                         
-        }
+        }       
     }
+}
+
 }
