@@ -2,11 +2,22 @@
 
 namespace App\Entity;
 
-use App\Repository\DepotRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\DepotRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
+ *  @ApiResource(
+ *  normalizationContext={"groups"={"depot:read"}},
  * 
+ *    collectionOperations={
+ *    "get"={"access_control"="is_granted('ROLE_AdminSystem')"}
+ *},
+ *    itemOperations={
+ *      "get"={"access_control"="is_granted('ROLE_AdminSystem')"},
+ *}
+ * )
  * @ORM\Entity(repositoryClass=DepotRepository::class)
  */
 class Depot
@@ -15,26 +26,31 @@ class Depot
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"depot:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({"depot:read"})
      */
     private $dateDepot;
 
     /**
      * @ORM\Column(type="float")
+     * @Groups({"depot:read"})
      */
     private $montantDepot;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="depots")
+     * @Groups({"depot:read"})
      */
     private $userDepot;
 
     /**
      * @ORM\ManyToOne(targetEntity=Compte::class, inversedBy="depots")
+     * @Groups({"depot:read"})
      */
     private $compte;
 

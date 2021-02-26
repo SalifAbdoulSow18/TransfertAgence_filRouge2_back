@@ -40,14 +40,14 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"user:read","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:read","transaction:read","depot:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $username;
 
@@ -67,14 +67,14 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $prenom;
 
@@ -86,21 +86,21 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $cni;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $address;
 
@@ -115,7 +115,7 @@ class User implements UserInterface
      * @ORM\ManyToOne(targetEntity=Profil::class, inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"user:read","compte:write","compte:read","transaction:read"})
+     * @Groups({"user:read","compte:write","compte:read","transaction:read","depot:read"})
      */
     private $profil;
 
