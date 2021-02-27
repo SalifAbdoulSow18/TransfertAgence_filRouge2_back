@@ -42,7 +42,6 @@ class Compte
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"compte:write","compte:read","transaction:read","depot:read"})
      */
     private $numeroCompte;
@@ -61,7 +60,6 @@ class Compte
     /**
      * @ORM\Column(type="boolean")
      * @Groups({"compte:write","compte:read"})
-     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      */
     private $statut = false;
 

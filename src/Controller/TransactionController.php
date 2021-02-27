@@ -44,11 +44,11 @@ class TransactionController extends AbstractController
        $transactions->setFraisSystem($this->calculPart($partChacun->getCommissionSystem(), $transactions->getFraisTotal()));
        $transactions->setFraisEnvoi($this->calculPart($partChacun->getCommissionEnvoie(), $transactions->getFraisTotal()));
        $transactions->setFraisRetrait($this->calculPart($partChacun->getCommissionRetrait(), $transactions->getFraisTotal()));
-       $restMontant = $this->getUser()->getAgence()->getCompte()->getMontant() - $transactions->getMontant() + $transactions->getFraisRetrait();
+       $restMontant = $this->getUser()->getAgence()->getCompte()->getMontant() - $transactions->getMontant() + $transactions->getFraisEnvoi();
         $this->getUser()->getAgence()->getCompte()->setMontant($restMontant);
         $transactions->setUserDepot($this->getUser());
 
-       //dd($transactions);
+       dd($transactions->getFraisTotal());
        $manager->persist($transactions);
        $manager->flush();
        return $this->json(['message' => 'Succes', 'data'=>$transactions]);
@@ -79,7 +79,7 @@ class TransactionController extends AbstractController
         if (!$data['clientRetrait'] || $transactions->getClientRetrait()->getPhone() !== $data['clientRetrait']) {
             return $this->json(['message' => 'les informations du client ne correspondent pas!!!'], 401);
         } 
-        $restMontant = $this->getUser()->getAgence()->getCompte()->getMontant() + $transactions->getMontant() + $transactions->getFraisRetrait();
+        $restMontant = $this->getUser()->getAgence()->getCompte()->getMontant() + $transactions->getMontant() - $transactions->getFraisTotal() + $transactions->getFraisRetrait();
     
         $this->getUser()->getAgence()->getCompte()->setMontant($restMontant);
         $transactions->setDateRetrait(new \DateTime());
@@ -122,8 +122,12 @@ class TransactionController extends AbstractController
     public function rechargeCompte(Request $request, EntityManagerInterface $manager, CompteRepository $repo,int $id)
     {
         $data = json_decode($request->getContent(), true);
+        //dd($data);
         if (!$this->getUser() || (!in_array('ROLE_AdminSystem', $this->getUser()->getRoles()) && !in_array('ROLE_Caissier', $this->getUser()->getRoles()))) {
          return $this->json(['message' => 'Accès non autorisé'], 403);
+        }
+        if ($data['montantDepot'] < 0) {
+            return $this->json(['message' => 'Vous ne pouvez pas retirer du cash sur ce compte'], 401);
         }
         $compte = $repo->find($id);
         if (!$compte) {
