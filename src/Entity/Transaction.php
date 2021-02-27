@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TransactionRepository;
 use App\Repository\TableauFraisRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Validator\Constraints as Asset;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -32,12 +33,14 @@ class Transaction
 
     /**
      * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $montant;
 
     /**
      * @ORM\Column(type="date")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $dateDepot;
@@ -50,36 +53,42 @@ class Transaction
 
     /**
      * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $fraisTotal;
 
     /**
      * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $fraisEtat;
 
     /**
      * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $fraisSystem;
 
     /**
      * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $fraisEnvoi;
 
     /**
      * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $fraisRetrait;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"transaction:read"})
      */
     private $codeTransaction;

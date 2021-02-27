@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CompteRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints as Asset;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -49,9 +50,13 @@ class Compte
     /**
      * @ORM\Column(type="float", precision=10, scale=0)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Assert\GreaterThanOrEqual(
+     *  value = 700000.00,
+     *  message="initialiser le compte avec un dépôt d’au moins 700 mille"
+     * )
      * @Groups({"compte:write","compte:read"})
      */
-    private $montant = 700000.00;
+    private $montant ;
 
     /**
      * @ORM\Column(type="boolean")

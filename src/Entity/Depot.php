@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\DepotRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints as Asset;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -32,12 +34,19 @@ class Depot
 
     /**
      * @ORM\Column(type="date")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"depot:read"})
+     * 
      */
     private $dateDepot;
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\GreaterThanOrEqual(
+     *  value = 0.00,
+     *  message="le montant doit etre positif"
+     * )
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"depot:read"})
      */
     private $montantDepot;
