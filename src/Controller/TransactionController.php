@@ -45,14 +45,51 @@ class TransactionController extends AbstractController
        $transactions->setFraisSystem($this->calculPart($partChacun->getCommissionSystem(), $transactions->getFraisTotal()));
        $transactions->setFraisEnvoi($this->calculPart($partChacun->getCommissionEnvoie(), $transactions->getFraisTotal()));
        $transactions->setFraisRetrait($this->calculPart($partChacun->getCommissionRetrait(), $transactions->getFraisTotal()));
+       $montantRetire = $transactions->getMontant() - $transactions->getFraisTotal();
+       $transactions->setMontantRetrait($montantRetire);
+       //dd($montantRetire);
        $restMontant = $this->getUser()->getAgence()->getCompte()->getMontant() - $transactions->getMontant() + $transactions->getFraisEnvoi();
-        $this->getUser()->getAgence()->getCompte()->setMontant($restMontant);
-        $transactions->setUserDepot($this->getUser());
-
-       dd($transactions->getFraisTotal());
+       $this->getUser()->getAgence()->getCompte()->setMontant($restMontant);
+       $transactions->setUserDepot($this->getUser());
+       //dd($transactions);
        $manager->persist($transactions);
        $manager->flush();
        return $this->json(['message' => 'Succes', 'data'=>$transactions]);
+
+    }
+
+    // -------------------------Annulation de depot par un caisier ou AdminSystem
+
+    /**
+     * @Route(
+     *  "api/transaction/annuler/{id}",
+     *   name="annulerTransaction",
+     *   methods={"DELETE"}
+     * )
+     */
+    public function annulerTransaction(EntityManagerInterface $manager, TransactionRepository $repo, CommissionRepository $commission, $id) {
+        if (!$this->isGranted('ROLE_UserAgence') or !$this->isGranted('ROLE_AdminAgence')) {
+            return $this->json(['message' => 'Accès non autorisé'], 401);
+        }
+        $compte = $repo->find($id);
+        $part = $commission->findAll();
+        foreach ($part as $value) {
+            $partChacun = $value;       
+        }
+        $montantEnvoi = $compte->getMontant();
+        $compteEnvoi = $compte->getUserDepot()->getAgence()->getCompte();
+        $sommeAnnulation = $this->calculPart($partChacun->getCommissionAgence(), $compte->getFraisTotal());
+        $prixRetrait = $this->calculPart($partChacun->getCommissionRetrait(), $compte->getFraisTotal());
+        //dd($sommeAnnulation);
+        
+        $newSoldeCompte =($compteEnvoi->getMontant() + $montantEnvoi + $prixRetrait);
+        $compteEnvoi->setMontant($newSoldeCompte);
+        $compte->setMontantAnnulation($montantEnvoi - $sommeAnnulation);
+        $compte->setDateAnnulation(new \DateTime());
+        $compte->setStatut(true);
+        //dd($compteEnvoi->getMontant());
+        $manager->flush();
+        return $this->json(['message' => 'annulation réussir!!!']);
 
     }
 
@@ -157,19 +194,25 @@ class TransactionController extends AbstractController
      * )
      */
     public function annulerDepot(EntityManagerInterface $manager, DepotRepository $depotRepository) {
-        $lastDepot = $depotRepository->findOneBy([], ['id' => 'desc']);
-        //dd($lastDepot);
-        $lastMontantEnvoi = $lastDepot->getMontantDepot();
-        $lastCompteEnvoi = $lastDepot->getCompte();
-        //dd($lastCompteEnvoi);
-        // recuperation du montant de depot dans le compte de l'agence
-        $newMontantCompte = $lastCompteEnvoi->getMontant() - $lastMontantEnvoi;
-        $lastCompteEnvoi->setMontant($newMontantCompte);
-        // nous allons supprimer la ligne du prends les info de la table d'associaton
-        $manager->remove($lastDepot);
-        $manager->flush();
-        return $this->json(['message' => 'annulation réussir!!!']);
-
+        if ($this->isGranted('ROLE_Caissier')) {
+            $lastDepot = $depotRepository->findOneBy([], ['id' => 'desc']);
+            //dd($lastDepot);
+            $lastMontantEnvoi = $lastDepot->getMontantDepot();
+            $lastCompteEnvoi = $lastDepot->getCompte();
+            //dd($lastCompteEnvoi);
+            // recuperation du montant de depot dans le compte de l'agence
+            if ($lastCompteEnvoi->getMontant() < $lastMontantEnvoi) {
+                return $this->json(['message' => 'Vous ne pouvez pas annuler'], 401);
+               }
+            $newMontantCompte = $lastCompteEnvoi->getMontant() - $lastMontantEnvoi;
+            $lastCompteEnvoi->setMontant($newMontantCompte);
+            // nous allons supprimer la ligne du prends les info de la table d'associaton
+            $manager->remove($lastDepot);
+            $manager->flush();
+            return $this->json(['message' => 'annulation réussir!!!']);
+        }else {
+            return $this->json("Vous n'avez pas accès !!!");
+        }
     }
 }
 

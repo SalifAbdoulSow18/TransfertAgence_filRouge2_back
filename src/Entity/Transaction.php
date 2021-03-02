@@ -120,6 +120,28 @@ class Transaction
      */
     private $clientRetrait;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $statut = false;
+
+    /**
+     * @ORM\Column(type="float")
+     * @Asset\NotBlank(message="Veuillez remplir ce champs")
+     * @Groups({"transaction:read"})
+     */
+    private $montantRetrait;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $montantAnnulation;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $dateAnnulation;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -282,17 +304,65 @@ class Transaction
     }
  // pour la recuperation des tarifs.
  public function calculeFraisTotal(TableauFraisRepository $tableauFrais){
-    $data = $tableauFrais->findAll();
-    foreach ($data as $value) {
-        switch (true) {
-            case ($this->montant >= 2000000):
-                $this->fraisTotal = ($value->getTarif() * $this->montant);
-                break;
-            case ($this->montant >= $value->getMin() && $this->montant < $value->getMax()):
-                $this->fraisTotal = $value->getTarif();
-                break;
-        }       
+                                        $data = $tableauFrais->findAll();
+                                        foreach ($data as $value) {
+                                            switch (true) {
+                                                case ($this->montant >= 2000000):
+                                                    $this->fraisTotal = ($value->getTarif() * $this->montant);
+                                                    break;
+                                                case ($this->montant >= $value->getMin() && $this->montant < $value->getMax()):
+                                                    $this->fraisTotal = $value->getTarif();
+                                                    break;
+                                            }       
+                                        }
+                                    }
+
+    public function getStatut(): ?bool
+    {
+        return $this->statut;
     }
-}
+
+    public function setStatut(bool $statut): self
+    {
+        $this->statut = $statut;
+
+        return $this;
+    }
+
+    public function getMontantRetrait(): ?float
+    {
+        return $this->montantRetrait;
+    }
+
+    public function setMontantRetrait(float $montantRetrait): self
+    {
+        $this->montantRetrait = $montantRetrait;
+
+        return $this;
+    }
+
+    public function getMontantAnnulation(): ?float
+    {
+        return $this->montantAnnulation;
+    }
+
+    public function setMontantAnnulation(?float $montantAnnulation): self
+    {
+        $this->montantAnnulation = $montantAnnulation;
+
+        return $this;
+    }
+
+    public function getDateAnnulation(): ?\DateTimeInterface
+    {
+        return $this->dateAnnulation;
+    }
+
+    public function setDateAnnulation(?\DateTimeInterface $dateAnnulation): self
+    {
+        $this->dateAnnulation = $dateAnnulation;
+
+        return $this;
+    }
 
 }
