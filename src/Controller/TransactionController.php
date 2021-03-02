@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Depot;
 use App\Repository\CommissionRepository;
 use App\Repository\CompteRepository;
+use App\Repository\DepotRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\TransactionRepository;
 use App\Repository\TableauFraisRepository;
@@ -146,6 +147,29 @@ class TransactionController extends AbstractController
     } 
 
    
-    
+    // -------------------------Annulation de depot par un caisier ou AdminSystem
+
+    /**
+     * @Route(
+     *  "api/rechargeComptes/annuler",
+     *   name="annulerDepot",
+     *   methods={"DELETE"}
+     * )
+     */
+    public function annulerDepot(EntityManagerInterface $manager, DepotRepository $depotRepository) {
+        $lastDepot = $depotRepository->findOneBy([], ['id' => 'desc']);
+        //dd($lastDepot);
+        $lastMontantEnvoi = $lastDepot->getMontantDepot();
+        $lastCompteEnvoi = $lastDepot->getCompte();
+        //dd($lastCompteEnvoi);
+        // recuperation du montant de depot dans le compte de l'agence
+        $newMontantCompte = $lastCompteEnvoi->getMontant() - $lastMontantEnvoi;
+        $lastCompteEnvoi->setMontant($newMontantCompte);
+        // nous allons supprimer la ligne du prends les info de la table d'associaton
+        $manager->remove($lastDepot);
+        $manager->flush();
+        return $this->json(['message' => 'annulation réussir!!!']);
+
+    }
 }
 

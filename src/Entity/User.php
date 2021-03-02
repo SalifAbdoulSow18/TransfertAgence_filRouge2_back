@@ -29,7 +29,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *},
  *    itemOperations={
  *        "get"={"access_control"="is_granted('ROLE_AdminSystem') or object==user"},
- *         "delete"={"access_control"="is_granted('ROLE_AdminSystem')"}
+ *         "delete"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_AdminAgence')"}
  *})
  * @ApiFilter(SearchFilter::class, properties={"profil.libelle": "exact"})
  * @UniqueEntity("username", message="l'adress username doit être unique")
