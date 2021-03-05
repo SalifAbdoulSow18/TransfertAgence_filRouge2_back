@@ -68,7 +68,7 @@ class TransactionController extends AbstractController
      * )
      */
     public function annulerTransaction(EntityManagerInterface $manager, TransactionRepository $repo, CommissionRepository $commission, $id) {
-        if (!$this->isGranted('ROLE_UserAgence') or !$this->isGranted('ROLE_AdminAgence')) {
+        if (!$this->isGranted('ROLE_UserAgence') && !$this->isGranted('ROLE_AdminAgence')) {
             return $this->json(['message' => 'Accès non autorisé'], 401);
         }
         $compte = $repo->find($id);
@@ -85,9 +85,13 @@ class TransactionController extends AbstractController
         $newSoldeCompte =($compteEnvoi->getMontant() + $montantEnvoi + $prixRetrait);
         $compteEnvoi->setMontant($newSoldeCompte);
         $compte->setMontantAnnulation($montantEnvoi - $sommeAnnulation);
+        $compte->setFraisSystem(0);
+        $compte->setFraisEtat(0);
+        $compte->setMontantRetrait(0);
+        $compte->setFraisTotal($sommeAnnulation);
         $compte->setDateAnnulation(new \DateTime());
         $compte->setStatut(true);
-        //dd($compteEnvoi->getMontant());
+        //dd($compte);
         $manager->flush();
         return $this->json(['message' => 'annulation réussir!!!']);
 
