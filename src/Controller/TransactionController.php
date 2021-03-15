@@ -37,6 +37,7 @@ class TransactionController extends AbstractController
         foreach ($part as $value) {
             $partChacun = $value;       
         }
+        $data['montant'] = \floatval($data['montant']);
        $transactions = $serializerInterface->denormalize($data, "App\Entity\Transaction");
        $transactions->setDateDepot(new \DateTime());
        $transactions->setCodeTransaction($this->genereCodeTransaction());
@@ -134,6 +135,32 @@ class TransactionController extends AbstractController
         
     }
 
+
+
+    // --------------Pour la recuperation des donnees par codeTransaction
+     /**
+     *  @Route(
+     *  "api/transactions/info",
+     *   name="infoDepot",
+     *   methods={"POST"}
+     * )
+     */
+    public function infoDepot(Request $request, TransactionRepository $repo)
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!$this->getUser() || $this->getUser()->getAgence() === null) {
+         return $this->json(['message' => 'Accès non autorisé'], 403);
+        }
+        $transactions = $repo->findOneByCodeTransaction($data['codeTransaction']);
+        
+        //dd($transactions->getClientRetrait()->getNomComplet());
+        return $this->json($transactions, 200);
+
+        
+    }
+
+
+
     // calcul des parts
     public function calculPart($pourcent, $montant)
     {
@@ -165,6 +192,7 @@ class TransactionController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         //dd($data);
+        $data['montantDepot'] = \floatval($data['montantDepot']);
         if (!$this->getUser() || (!in_array('ROLE_AdminSystem', $this->getUser()->getRoles()) && !in_array('ROLE_Caissier', $this->getUser()->getRoles()))) {
          return $this->json(['message' => 'Accès non autorisé'], 403);
         }
@@ -218,5 +246,27 @@ class TransactionController extends AbstractController
             return $this->json("Vous n'avez pas accès !!!");
         }
     }
+
+
+    // -------------------Pour me retourner les frais de transactions
+
+    /**
+     *  @Route(
+     *  "api/transactions/tarif",
+     *   name="tarif",
+     *   methods={"POST"}
+     * )
+     */
+    public function tarif(SerializerInterface $serializerInterface, Request $request, TableauFraisRepository $monney)
+    { 
+       $data = json_decode($request->getContent(), true);
+       $data['montant'] = \floatval($data['montant']);
+       $transaction = $serializerInterface->denormalize($data, "App\Entity\Transaction");
+       $transaction->calculeFraisTotal($monney);
+       $frais = $transaction->getFraisTotal();
+       return $this->json($frais, 200);
+
+    }
+    
 }
 

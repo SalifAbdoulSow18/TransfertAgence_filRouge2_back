@@ -304,18 +304,18 @@ class Transaction
     }
  // pour la recuperation des tarifs.
  public function calculeFraisTotal(TableauFraisRepository $tableauFrais){
-                                        $data = $tableauFrais->findAll();
-                                        foreach ($data as $value) {
-                                            switch (true) {
-                                                case ($this->montant >= 2000000):
-                                                    $this->fraisTotal = ($value->getTarif() * $this->montant);
-                                                    break;
-                                                case ($this->montant >= $value->getMin() && $this->montant < $value->getMax()):
-                                                    $this->fraisTotal = $value->getTarif();
-                                                    break;
-                                            }       
-                                        }
-                                    }
+    $data = $tableauFrais->findAll();
+    foreach ($data as $value) {
+        switch (true) {
+            case ($this->montant >= 2000000):
+                $this->fraisTotal = ($value->getTarif() * $this->montant);
+                break;
+            case ($this->montant >= $value->getMin() && $this->montant < $value->getMax()):
+                $this->fraisTotal = $value->getTarif();
+                break;
+        }       
+    }
+}
 
     public function getStatut(): ?bool
     {
