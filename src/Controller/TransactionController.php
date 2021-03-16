@@ -63,16 +63,19 @@ class TransactionController extends AbstractController
 
     /**
      * @Route(
-     *  "api/transaction/annuler/{id}",
+     *  "api/transaction/annuler",
      *   name="annulerTransaction",
      *   methods={"DELETE"}
      * )
      */
-    public function annulerTransaction(EntityManagerInterface $manager, TransactionRepository $repo, CommissionRepository $commission, $id) {
+    public function annulerTransaction(Request $request, EntityManagerInterface $manager, TransactionRepository $repo, CommissionRepository $commission) {
+        $data = json_decode($request->getContent(), true);
         if (!$this->isGranted('ROLE_UserAgence') && !$this->isGranted('ROLE_AdminAgence')) {
             return $this->json(['message' => 'Accès non autorisé'], 401);
         }
-        $compte = $repo->find($id);
+        
+        
+        $compte = $repo->findOneByCodeTransaction($data['codeTransaction']);
         $part = $commission->findAll();
         foreach ($part as $value) {
             $partChacun = $value;       
