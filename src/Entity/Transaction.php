@@ -8,6 +8,8 @@ use App\Repository\TableauFraisRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Validator\Constraints as Asset;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ApiResource(
@@ -20,6 +22,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      "get"
  *})
  * @ORM\Entity(repositoryClass=TransactionRepository::class)
+ * @ApiFilter(SearchFilter::class, properties={"statut": "exact"})
  */
 class Transaction
 {
