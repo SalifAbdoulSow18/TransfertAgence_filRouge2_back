@@ -34,14 +34,14 @@ class Agence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"compte:read","transaction:read"})
+     * @Groups({"compte:read","transaction:read","user:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Asset\NotBlank(message="Veuillez remplir ce champs")
-     * @Groups({"compte:write","compte:read","transaction:read"})
+     * @Groups({"compte:write","compte:read","transaction:read","user:read"})
      */
     private $nomAgence;
 

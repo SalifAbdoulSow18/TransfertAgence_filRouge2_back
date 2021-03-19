@@ -125,6 +125,7 @@ class Transaction
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"transaction:read"})
      */
     private $statut = false;
 

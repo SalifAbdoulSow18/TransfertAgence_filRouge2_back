@@ -12,7 +12,7 @@ class JwtCreatedSubscriber
         $user = $event->getUser();
 
         //Surchage des donnees du Token 
-        $data =$event->getData();
+        $data = $event->getData();
         $data['id'] = $user->getId();
         $data['status'] = $user->getStatut();
 

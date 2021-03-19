@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Depot;
-use App\Repository\CommissionRepository;
-use App\Repository\CompteRepository;
+use App\Repository\UserRepository;
 use App\Repository\DepotRepository;
+use App\Repository\AgenceRepository;
+use App\Repository\CompteRepository;
+use App\Repository\CommissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\TransactionRepository;
 use App\Repository\TableauFraisRepository;
@@ -229,7 +231,7 @@ class TransactionController extends AbstractController
      * )
      */
     public function annulerDepot(EntityManagerInterface $manager, DepotRepository $depotRepository) {
-        if ($this->isGranted('ROLE_Caissier')) {
+        if ($this->isGranted('ROLE_Caissier') || $this->isGranted('ROLE_AdminSystem')) {
             $lastDepot = $depotRepository->findOneBy([], ['id' => 'desc']);
             //dd($lastDepot);
             $lastMontantEnvoi = $lastDepot->getMontantDepot();
@@ -237,14 +239,14 @@ class TransactionController extends AbstractController
             //dd($lastCompteEnvoi);
             // recuperation du montant de depot dans le compte de l'agence
             if ($lastCompteEnvoi->getMontant() < $lastMontantEnvoi) {
-                return $this->json(['message' => 'Vous ne pouvez pas annuler'], 401);
+                return $this->json('Vous ne pouvez pas annuler');
                }
             $newMontantCompte = $lastCompteEnvoi->getMontant() - $lastMontantEnvoi;
             $lastCompteEnvoi->setMontant($newMontantCompte);
             // nous allons supprimer la ligne du prends les info de la table d'associaton
             $manager->remove($lastDepot);
             $manager->flush();
-            return $this->json(['message' => 'annulation réussir!!!']);
+            return $this->json('annulation réussir!!!');
         }else {
             return $this->json("Vous n'avez pas accès !!!");
         }
@@ -269,6 +271,42 @@ class TransactionController extends AbstractController
        $frais = $transaction->getFraisTotal();
        return $this->json($frais, 200);
 
+    }
+
+
+    // -------------------Pour me retourner le id à parti du nom de l'agence
+
+    /**
+     *  @Route(
+     *  "api/transactions/numerocompte",
+     *   name="numCompte",
+     *   methods={"POST"}
+     * )
+     */
+    public function numCompte(Request $request, AgenceRepository $agence)
+    { 
+       $data = json_decode($request->getContent(), true);
+       $var = $agence->findOneByNomAgence($data['nomAgence']);
+       return $this->json($var->getId(), 200);
+    }
+
+
+    // ---------------Lister les transactions du user connecté
+
+    /**
+     *  @Route(
+     *     "api/users/transaction/{id}",
+     *     name="transaction",
+     *     methods={"GET"}
+     *     )
+     */
+    public function transaction(int $id, UserRepository $repo) {
+        $user = $repo->find($id);
+        $trans = [];
+        foreach ($user->getTransactions() as $value) {
+            $trans[] = $value;
+        }
+        return $this->json($trans, Response::HTTP_OK);
     }
     
 }
