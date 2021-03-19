@@ -72,34 +72,42 @@ class TransactionController extends AbstractController
      */
     public function annulerTransaction(Request $request, EntityManagerInterface $manager, TransactionRepository $repo, CommissionRepository $commission) {
         $data = json_decode($request->getContent(), true);
+        $user = $this->getUser();
         if (!$this->isGranted('ROLE_UserAgence') && !$this->isGranted('ROLE_AdminAgence')) {
             return $this->json(['message' => 'Accès non autorisé'], 401);
         }
-        
-        
         $compte = $repo->findOneByCodeTransaction($data['codeTransaction']);
-        $part = $commission->findAll();
-        foreach ($part as $value) {
-            $partChacun = $value;       
+        if ($compte->getUserDepot()->getId() === $user) {
+
+            $part = $commission->findAll();
+            foreach ($part as $value) {
+                $partChacun = $value;       
+            }
+            $montantEnvoi = $compte->getMontant();
+            //dd($montantEnvoi);
+            $compteEnvoi = $user->getAgence()->getCompte();
+            //dd($compteEnvoi);
+            $sommeAnnulation = $this->calculPart($partChacun->getCommissionAgence(), $compte->getFraisTotal());
+            $prixRetrait = $this->calculPart($partChacun->getCommissionRetrait(), $compte->getFraisTotal());
+            //dd($sommeAnnulation);
+            
+            $newSoldeCompte =($compteEnvoi + $montantEnvoi + $prixRetrait);
+            $compteEnvoi->setMontant($newSoldeCompte);
+            $compte->setMontantAnnulation($montantEnvoi - $sommeAnnulation);
+            $compte->setFraisSystem(0);
+            $compte->setFraisEtat(0);
+            $compte->setMontantRetrait(0);
+            $compte->setFraisTotal($sommeAnnulation);
+            $compte->setDateAnnulation(new \DateTime());
+            $compte->setStatut(true);
+            //dd($compte);
+            $manager->flush();
+            return $this->json(['message' => 'annulation réussir!!!']);
+        } else {
+            return $this->json("Vous n'avez réalisé ce depot !!!");
         }
-        $montantEnvoi = $compte->getMontant();
-        $compteEnvoi = $compte->getUserDepot()->getAgence()->getCompte();
-        $sommeAnnulation = $this->calculPart($partChacun->getCommissionAgence(), $compte->getFraisTotal());
-        $prixRetrait = $this->calculPart($partChacun->getCommissionRetrait(), $compte->getFraisTotal());
-        //dd($sommeAnnulation);
         
-        $newSoldeCompte =($compteEnvoi->getMontant() + $montantEnvoi + $prixRetrait);
-        $compteEnvoi->setMontant($newSoldeCompte);
-        $compte->setMontantAnnulation($montantEnvoi - $sommeAnnulation);
-        $compte->setFraisSystem(0);
-        $compte->setFraisEtat(0);
-        $compte->setMontantRetrait(0);
-        $compte->setFraisTotal($sommeAnnulation);
-        $compte->setDateAnnulation(new \DateTime());
-        $compte->setStatut(true);
-        //dd($compte);
-        $manager->flush();
-        return $this->json(['message' => 'annulation réussir!!!']);
+        
 
     }
 
@@ -307,6 +315,43 @@ class TransactionController extends AbstractController
             $trans[] = $value;
         }
         return $this->json($trans, Response::HTTP_OK);
+    }
+
+     // ---------------Lister les transactions du user connecté
+
+    /**
+     *  @Route(
+     *     "api/admin/transaction",
+     *     name="transactions",
+     *     methods={"GET"}
+     *     )
+     */
+    public function transactions(TransactionRepository $repo) {
+        $user = $this->getUser();
+        $trans = $repo->findAll();
+        dd($trans);
+        // foreach ($user->getTransactions() as $value) {
+        //     $trans[] = $value;
+        // }
+        // return $this->json($trans, Response::HTTP_OK);
+    }
+
+    // ---------------Lister les montant du compte de user connecté
+
+    /**
+     *  @Route(
+     *     "api/montantCompte",
+     *     name="montant",
+     *     methods={"GET"}
+     *     )
+     */
+    public function montant() {
+        $user = $this->getUser();
+        //dd($user);
+        
+        $montant = $user->getAgence()->getCompte()->getMontant();
+        //dd($montant);
+        return $this->json($montant, Response::HTTP_OK);
     }
     
 }
