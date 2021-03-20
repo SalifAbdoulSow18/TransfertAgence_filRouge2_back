@@ -17,16 +17,17 @@ final class CompteDataPersister implements ContextAwareDataPersisterInterface
     }
     public function supports($data, array $context = []): bool
     {
-        //dd("oki");
         return $data instanceof Compte;
     }
 
     public function persist($data, array $context = [])
     {
       // call your persistence layer to save $data
+      //dd($data);
       $users = $data->getAgence()->getUsers();
+      
       foreach ($users as $value) {
-          $value->setPassword($this->encode->encodePassword($value, $value->getPassword()));
+        $value->setPassword($this->encode->encodePassword($value, $value->getPassword()));
       }
       $data->setNumeroCompte($this->genereNumeroCompte());
       $this->manager->persist($data);
