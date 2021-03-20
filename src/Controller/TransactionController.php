@@ -67,31 +67,36 @@ class TransactionController extends AbstractController
      * @Route(
      *  "api/transaction/annuler",
      *   name="annulerTransaction",
-     *   methods={"DELETE"}
+     *   methods={"POST"}
      * )
      */
     public function annulerTransaction(Request $request, EntityManagerInterface $manager, TransactionRepository $repo, CommissionRepository $commission) {
         $data = json_decode($request->getContent(), true);
+        
         $user = $this->getUser();
+        //dd($user);
         if (!$this->isGranted('ROLE_UserAgence') && !$this->isGranted('ROLE_AdminAgence')) {
             return $this->json(['message' => 'Accès non autorisé'], 401);
         }
+        
         $compte = $repo->findOneByCodeTransaction($data['codeTransaction']);
-        if ($compte->getUserDepot()->getId() === $user) {
+        
+        //dd($compte->getUserDepot());
+        if ($compte->getUserDepot() === $user) {
 
             $part = $commission->findAll();
             foreach ($part as $value) {
                 $partChacun = $value;       
             }
+            
             $montantEnvoi = $compte->getMontant();
-            //dd($montantEnvoi);
             $compteEnvoi = $user->getAgence()->getCompte();
             //dd($compteEnvoi);
             $sommeAnnulation = $this->calculPart($partChacun->getCommissionAgence(), $compte->getFraisTotal());
             $prixRetrait = $this->calculPart($partChacun->getCommissionRetrait(), $compte->getFraisTotal());
             //dd($sommeAnnulation);
             
-            $newSoldeCompte =($compteEnvoi + $montantEnvoi + $prixRetrait);
+            $newSoldeCompte =($compteEnvoi->getMontant() + $montantEnvoi + $prixRetrait);
             $compteEnvoi->setMontant($newSoldeCompte);
             $compte->setMontantAnnulation($montantEnvoi - $sommeAnnulation);
             $compte->setFraisSystem(0);
@@ -102,7 +107,7 @@ class TransactionController extends AbstractController
             $compte->setStatut(true);
             //dd($compte);
             $manager->flush();
-            return $this->json(['message' => 'annulation réussir!!!']);
+            return $this->json('annulation réussir!!!');
         } else {
             return $this->json("Vous n'avez réalisé ce depot !!!");
         }
