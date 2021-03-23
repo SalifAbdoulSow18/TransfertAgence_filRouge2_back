@@ -13,10 +13,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *  normalizationContext={"groups"={"depot:read"}},
  * 
  *    collectionOperations={
- *    "get"={"access_control"="is_granted('ROLE_AdminSystem')"}
+ *    "get"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_Caissier')"}
  *},
  *    itemOperations={
- *      "get"={"access_control"="is_granted('ROLE_AdminSystem')"},
+ *      "get"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_Caissier')"},
  *}
  * )
  * @ORM\Entity(repositoryClass=DepotRepository::class)

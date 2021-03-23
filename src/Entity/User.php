@@ -30,9 +30,11 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *},
  *    itemOperations={
  *        "get"={"access_control"="is_granted('ROLE_AdminSystem') or object==user"},
+ *        "put"={"access_control"="is_granted('ROLE_AdminSystem') or object==user"},
  *         "delete"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_AdminAgence')"}
  *})
  * @UniqueEntity("username", message="l'adress username doit être unique")
+ * @ApiFilter(SearchFilter::class, properties={"statut": "exact"})
  */
 class User implements UserInterface
 {
@@ -106,7 +108,6 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
-     * @Asset\NotBlank(message="Veuillez remplir ce champs")
      * @Groups({"user:read","compte:write","compte:read","transaction:read"})
      */
     private $statut = false;

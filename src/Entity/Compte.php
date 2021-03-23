@@ -26,7 +26,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *},
  *    itemOperations={
  *        "get"={"access_control"="is_granted('ROLE_AdminSystem')or is_granted('ROLE_Caissier')"},
- *         "delete"={"access_control"="is_granted('ROLE_AdminSystem')"}
+ *         "delete"={"access_control"="is_granted('ROLE_AdminSystem') or is_granted('ROLE_Caissier')"}
  *})
  *
  * @ORM\Entity(repositoryClass=CompteRepository::class)
