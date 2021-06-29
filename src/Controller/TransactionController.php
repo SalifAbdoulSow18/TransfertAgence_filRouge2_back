@@ -80,7 +80,8 @@ class TransactionController extends AbstractController
         }
         
         $compte = $repo->findOneByCodeTransaction($data['codeTransaction']);
-        
+
+        if ($compte->getDateRetrait === null) {
         //dd($compte->getUserDepot());
         if ($compte->getUserDepot() === $user) {
 
@@ -109,8 +110,11 @@ class TransactionController extends AbstractController
             $manager->flush();
             return $this->json('annulation réussir!!!');
         } else {
-            return $this->json("Vous n'avez réalisé ce depot !!!");
+            return $this->json("Vous ne pouvez pas annuler !!!");
         }
+    }else {
+        return $this->json("Vous ne pouvez pas annuler cas le retrait a été déjà effectué !!!");
+    }
         
         
 
@@ -133,9 +137,6 @@ class TransactionController extends AbstractController
         $transactions = $repo->findOneByCodeTransaction($data['codeTransaction']);
         if ($transactions->getDateRetrait()) {
             return $this->json(['message' => 'Vous avez déjà recuperé votre argent'], 401);
-        }
-        if ($this->getUser()->getAgence()->getCompte()->getMontant() < $transactions->getMontant()) {
-         return $this->json(['message' => 'Vous n \'avez assez d\'argent sur votre compte'], 401);
         }
         if (!$data['clientRetrait'] || $transactions->getClientRetrait()->getPhone() !== $data['clientRetrait']) {
             return $this->json(['message' => 'les informations du client ne correspondent pas!!!'], 401);
@@ -304,7 +305,7 @@ class TransactionController extends AbstractController
     }
 
 
-    // ---------------Lister les transactions du user connecté
+    // ---------------Lister les transactions Dépot du user connecté
 
     /**
      *  @Route(
@@ -319,6 +320,27 @@ class TransactionController extends AbstractController
         foreach ($user->getTransactions() as $value) {
             $trans[] = $value;
         }
+        return $this->json($trans, Response::HTTP_OK);
+    }
+
+    // ---------------Lister les transactions retrait du user connecté
+
+    /**
+     *  @Route(
+     *     "api/users/transactionRetrait/{id}",
+     *     name="transaction_retrait",
+     *     methods={"GET"}
+     *     )
+     */
+    public function transaction_retrait(int $id, UserRepository $repo) {
+        $user = $repo->find($id);
+        $trans = [];
+        foreach ($user->getTransactions() as $value) {
+               if ($value->getDateRetrait() !== null) {
+                $trans[] = $value;
+               }
+        }
+
         return $this->json($trans, Response::HTTP_OK);
     }
 
