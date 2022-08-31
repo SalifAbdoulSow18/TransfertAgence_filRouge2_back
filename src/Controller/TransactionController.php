@@ -151,7 +151,6 @@ class TransactionController extends AbstractController
         $manager->flush();
         return $this->json(['message' => 'Succes', 'data'=>$transactions]);
 
-        
     }
 
 
@@ -171,10 +170,8 @@ class TransactionController extends AbstractController
          return $this->json(['message' => 'Accès non autorisé'], 403);
         }
         $transactions = $repo->findOneByCodeTransaction($data['codeTransaction']);
-        
         //dd($transactions->getClientRetrait()->getNomComplet());
         return $this->json($transactions, 200);
-
         
     }
 
